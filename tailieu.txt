@@ -1,0 +1,524 @@
+
+https://vinasupport.com/huong-dan-su-dung-lenh-apt-tren-ubuntu-linux/
+https://www.familug.org/2015/01/e-tro-thanh-linux-sysadmin.html
+https://vinasupport.com/nhung-viec-can-lam-sau-khi-cai-dat-ubuntu/
+
+-----------------------------------------
+echo "one:two:three" | awk -F':' '{print $1 $2}'
+onetwo
+echo '1/2/3/4' | awk -F'/' '{print $3 - $1}'
+2
+---------------------------------------
+https://www.familug.org/2012/10/generate-random-data-part1.html 
+-------------------------
+https://ubuntuforums.org/showthread.php?t=1792819
+https://drive.google.com/drive/u/0/folders/1KESyU_BLRb0rzKo7jjsxD1_Uj-NmOOyH
+
+---------------------------------------------------------------------
+UserExist()
+{
+   awk -F":" '{ print $1 }' /etc/passwd | grep -x $1 > /dev/null
+   return $?
+}
+
+----------------------------------------------sed*-----------------
+https://vietjack.com/unix/regular_expression_trong_unix_linux.jsp
+------------------------------------------------
+apt-cache search [search term 1]   sudo apt-get update
+----------------key---------------
++---[RSA 3072]----+
+|           E.++  |
+|.  . o .    .  + |
+|o. .+ o +   + +  |
+| oo. . * . O =   |
+| .. o . S + = o  |
+|.  o . o B   +   |
+|*..     * o .    |
+|B*.      o       |
+|+o..             |
++----[SHA256]-----+
+--------------------lỗi xé hình- cách fix-------------------------
+https://qastack.vn/ubuntu/1135103/ubuntu-19-04-screen-tearing-with-nvidia-gtx-1660-ti
+
+-------------------------sftp---------------------
+https://www.digitalocean.com/community/tutorials/how-to-use-sftp-to-securely-transfer-files-with-a-remote-server
+---- sftp -oPort=247 root@103.57.221.147
+-----------------------đặt lịch cho tác vụ job scheduler--------------------
++crond 
+crontab -l -u root
+crontab -e 
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name  command to be executed
+-------------đặt pass grub2-----------
+grub2-setpassword
+cat /boot/grub2/user.cfg 
+
+-------------------crack pass root+------------------------
+rd.break 
++ mount -o remount,rw /sysroot
++ chroot sysroot
++ passwd or echo "123" | passwd --stdin root
++ touch /.autorelabel
++ exit
++ reboot 
+----------------------x11 forward----
+vi /etc/ssh/sshd_config
+109 X11Forwarding yes 
+--------------------------cấu hinh ssh cho user--------
+semanage port -a -t ssh_port_t -p tcp 24700 
+semanage port -l |grep ssh 
+firewall-cmd --add-port=24700/tcp --permanent 
+systemctl restart sshd 
+AllowUsers u1
+DenyUsers u2 
+AllGroups ....
+systemctl restart sshd 
+đổi port
+vi /etc/ssh/sshd_conffig để đổi port
+
+
+ssh-keygen -t rsa
+----------------------------------cai cacti--------------------------------
+cai mariadp moi nhat 
+yum install MariaDB-server 
+cai php
+yum install php php-{mysqlnd,curl,gd,intl,pear,recode,ldap,xmlrpc,snmp,mbstring,gettext,gmp,json,xml,common}
+
+yum install -y php-snmp net-snmp-utils net-snmp-libs rrdtool
+systemctl enable snmpd.service 
+yum install -y rrdtool rrdtool-devel
+yum install php-fpm
+systemctl enable --now httpd snmpd php-fpm mariadb
+yum install epel-release
+yum install gcc mysql-devel net-snmp-devel
+yum install cacti
+                      -----------------------------------
+                      thêm db cho cacti
+mysql_secure_installation
+mysql -u root -p
+
+create database cacti;
+GRANT ALL ON cacti.* TO cacti@localhost IDENTIFIED BY 'P@ssw0rd';
+GRANT SELECT ON mysql.time_zone_name TO cacti@localhost IDENTIFIED BY 'P@ssw0rd';
+flush privileges;
+quit 
+
+xem cacti để db ở đâu
+rpm -ql cacti|grep cacti.sql
+
+nhập db
+mysql -u cacti -p cacti < /usr/share/doc/cacti-1.2.12/cacti.sql
+pass 
+P@ssw0rd
+
+    sửa file cấu hình
+
+ vi /etc/cacti/db.php 
+$database_type = 'mysql';
+$database_default = 'cacti';
+$database_hostname = 'localhost';
+$database_username = 'cacti';
+$database_password = 'P@ssw0rd';
+$database_port = '3306';
+$database_retries = 5;
+$database_ssl = false;
+$database_ssl_key = '';
+$database_ssl_cert = '';
+$database_ssl_ca = '';   
+     
+    vi /etc/httpd/conf.d/cacti.conf 
+sửa quyền ko truy cập được 
+14 <Directory /usr/share/cacti/>
+15 <IfModule mod_authz_core.c>
+16 # httpd 2.4
+17 #Require host localhost
+18 Require all granted
+19 </IfModule>
+20 <IfModule !mod_authz_core.c>
+21 # httpd 2.2
+22 Order deny,allow
+23 #Deny from all
+24 #Allow from localhost
+25 Allow from all
+26 </IfModule>
+27 </Directory> 
+
+sửa lỗi ko đqăng nhập được
+vi /usr/share/cacti/include/config.php
+phien ban 1.2.11
+comment $cacti_cookie_domain = 'cacti.net';
+
+pass Quan_pro123
+
+------------------------
+fix sai h
+vi /etc/php.ini
+date.timezone = "Asia/Ho_Chi_Minh" bỏ dấu chấm phẩy phía trc
+systemctl restart httpd
+
+systemctl restart php-fpm.service
+systemctl restart httpd
+
+---------------------
+
+fix loi Your MySQL TimeZone database is not populated. Please populate this database before proceeding.
+mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+systemctl restart php-fpm.service
+systemctl restart httpd
+
+-------------
+tối ưu php
+ vi /etc/php.ini
+ đổi các thông số
+ memory_limit = 800M #add new thêm vào dòng cuối
+ max_execution_time = 60
+systemctl restart php-fpm.service
+systemctl restart httpd
+
+-----------------
+fix loi mysql
+\\mariadb custom config for cacti
+vi /etc/my.cnf.d/server.cnf 
+
+fix loi permission to mariadb:
+ 
+ install -dpm770 -o mysql -g mysql /var/run/mariadb
+
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/run/mariadb/mariadb.pid
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+max_heap_table_size=64M
+tmp_table_size=64M
+join_buffer_size=1024M
+innodb_buffer_pool_size=1024M
+innodb_doublewrite=ON
+innodb_flush_log_at_timeout=3
+innodb_read_io_threads=32
+innodb_write_io_threads=16
+innodb_buffer_pool_instances=11
+innodb_io_capacity=5000
+innodb_io_capacity_max=10000
+innodb_file_format=Barracuda
+innodb_large_prefix=1 
+
+
+ systemctl restart mariadb
+
+
+cấu hình tham khảo
+##########
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/run/mariadb/mariadb.pid
+character-set-server=utf8mb4
+character_set_client=utf8mb4
+collation-server=utf8mb4_unicode_ci
+max_heap_table_size=29M
+tmp_table_size=29M
+join_buffer_size=57M
+innodb_buffer_pool_size=449M
+innodb_doublewrite=ON
+innodb_flush_log_at_timeout=3
+innodb_read_io_threads=32
+innodb_write_io_threads=16
+innodb_buffer_pool_instances=2
+innodb_io_capacity=5000
+innodb_io_capacity_max=10000
+innodb_file_format=Barracuda
+innodb_large_prefix=1
+##################
+collation-server = utf8mb4_unicode_ci
+init-connect='SET NAMES utf8'
+character-set-server = utf8mb4
+max_heap_table_size = 256M
+max_allowed_packet = 16777216
+tmp_table_size = 64M
+join_buffer_size = 64M
+innodb_file_per_table = on
+innodb_buffer_pool_size = 1024M
+innodb_doublewrite = off
+innodb_flush_log_at_timeout = 3
+innodb_read_io_threads = 32
+innodb_write_io_threads = 16
+innodb_lock_wait_timeout = 50
+innodb_flush_log_at_trx_commit = 2
+innodb_doublewrite=ON
+############################
+
+systemctl restart php-fpm.service
+systemctl restart httpd
+
+
+
+
+vi /etc/cron.d/cacti 
+*/5 * * * * apache /usr/bin/php /usr/share/cacti/poller.php > /dev/null 2>&1 
+
+cai cai nay de giam sat server
+yum -y install net-snmp-utils net-snmp-libs
+systemctl enable --now snmpd 
+kiem tra xem co ket noi dc vs sv hay ko
+snmpwalk -v2c -c public 202.92.4.116 
+firewall-cmd --add-service=snmp --permanent 
+
+
+
+
+
+GRANT SELECT ON mysql.time_zone_name TO cactiuser@localhost;
+flush privileges;
+exit 
+GRANT SELECT ON mysql.time_zone_name TO cacti@localhost;
+flush privileges;
+exit 
+rpm -ql cacti|grep cacti.sql 
+
+cacsu hình cacti gửi mail về đt
+https://techexpert.tips/cacti/cacti-email-notification-setup/
+ 
+
+----------------------------------tạo  lời chào khi đăng nhập usser--------
+/etc/default/useradd 
+/etc/skel Thư mục mẫu của user mà khi tạo ra, user sẽ tự động copy các file và thư mục trong đây vào thư mục /home/tên-user.
+tạo một file script và bỏ vô thư mục skel
+
+#!/bin/sh
+echo “Hello,$USER”
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo "||   || ||==== ||     ||    ||====||"
+echo "||   || ||     ||     ||    ||    ||"
+echo "||===|| ||==== ||     ||    ||    ||"
+echo "||   || ||     ||     ||    ||    ||"
+echo "||   || ||==== ||==== ||=== ||====||"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+Thêm lệnh sh hello.sh vào file /home/u1/.bash_profile để thực shell script hello.sh
+------------------------change own file-----------
+chown user:group filename
+ex chown u1:IT  /root/IT
+-----------------mount file bang /etc/sftab----------
+https://blogd.net/linux/quan-ly-phan-vung-dia-cung-tren-linux/
+
+-------------------iptable--------------------------------------------------------------
+netstat -natp | grep httpd check xem dich vu đang chạy port nào.
+ss -tlnp
+yum -y install iptables-services
+systemctl enable iptables
+systemctl start iptables
+
+service iptables status
+systemctl unmask iptables
+iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
+iptables -I INPUT 5 -p tcp --dport 443 -j ACCEPT
+
+iptables -L -n --line-number
+---------------------ifcfg-----------------------------------------
+cd /etc/sysconfig/network-scripts
+cat ifcfg-ten card mang
+
+TẠO CARD MẠNG ẢO (ip alias)
+copy /etc/sysconfig/network-scripts/ifcfg-eth0 thành /etc/sysconfig/network-scripts/ifcfg-eth0:0
+service network restart 
+
+
+                                                     *XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+yum install net-tool
+
+-------------------mysql----------------------------------------------
+
+
+yum install MariaDB-server MariaDB-client MariaDB-devel -y
+systemctl start mariadb.service
+systemctl enable --now mariadb
+mysql_secure_installation
+rpm -qa | grep mariadb
+mysql -u root -p thoitrang <thoitrangdb    import database
+mysql -u root -p để vào mysql
+use mysql
+create database minhquan
+ tim file cau hinh mac dinh
+ mysqld --help --verbose 2> /dev/null | grep -A1 'Default options'
+ 
+ fix loi permission to mariadb:
+ 
+ install -dpm770 -o mysql -g mysql /var/run/mariadb
+ 
+ xóa database drop database abc ;
+ xóa user drop user admin@localhost;
+ 
+ show databases;
+ 
+ 
+ 
+-----------------------------------conf lvm-------------------
+pvremove 
+pvcreate
+vgremove
+vgcreate
+lsblk
+vgs
+lvs
+pvs
+lvcreate -L 500mb -n newLV newVG
+lvextend -L +500mbr
+resize2fs /dev/vg/lv
+mkfs.xfs /dev/vg/lv
+vgcreate vgname /dev/sdb1 /dev/sdc1
+xfs_admin -L "newlabel" / dev /
+blkid
+
+---------------------sudo---------------------
+vi /etc/sudoers
+usermod -f10 khoa tài khoảng sau 10 ngày hết hạn mật khẩu
+usermod -L lock user
+usermod -U unlock
+usermod -G group user add vô group
+usermod -e 2020-12-31 thời hạn mật khẩu
+
+-------------fix loi failed to download metadata fof repo"xx"----------
+rm -rf /var/cache/dnf
+
+
+
+
+
+
+
+
+
+
+-----------------------------------cai php--------------------
+dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+dnf module list php kiểm tra có bào nhiêu bản php trên tất cả repo
+sudo dnf module reset php
+sudo dnf module enable php:remi-7.4
+dnf install php php-opcache php-gd php-curl php-mysqlnd
+
+
+vi info.php
+<?php
+phpinfo();
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------sftp bằng file manager------------------------
+^+L
+sftp://example.org[:port]/
+sftp://103.57.221.147:24700 
+------------------vsftp------------------------------------------------
+yum install vsftp
+vi /etc/
+-------------------------------------------------
+đối với phần mềm sử dụng thường xuyên chúng ta nên biên dịch*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+------------------- Các câu lệnh troubleshoot mạng cơ bản-------------------------------
+yum install net-tools
+kiểm tra cảd mạng có tốt ko
+ping vào địa chỉ ip 
+xem gateway ; ip route
+ping vào gateway để kiểm tra
+ping vào 8.8.8.8 xem có vào đc internet ko
+tra cứu dns của web side 
+yum install bind-utils
+> nslookup
+> facebook.com
+> web side của mình
+kiểm tra xem dịch vụ http chạy ở port nào
+yum install telnet
+telnet vnexpress.net 80 kiểm tra xem máy chủ vnex có mở cổng 80 hay ko
+service network restart
+https://mdungblog.wordpress.com/sua-loi-network-is-unreachable-centos/
+
+systemctl restart NetworkManager.service
+-------------------virtual host-------------------------------------------------
+mỗi web side sẻ có một servername 
+--------------------------cách tìm file cấu hình mẫu---------------------------
+rpm -qd bind | grep sample
+
+----------------------------------tat selinx nhanh-------------------
+setenforce 0
+getenforce 
+
+-------------------mail comman alert---------------------------
+https://techexpert.tips/cacti/cacti-email-notification-setup/
+https://gist.github.com/ilkereroglu/aa6c868153d1c5d57cd8
+https://stackoverflow.com/questions/54725/change-the-from-address-in-unix-mail
+
+
+
+
+-----------------telegram alert---------------------
+https://medium.com/@jasonlimberis/server-runscript-telegram-alert-bot-8a1691297a52
+
+
+-----------------------------ftp-comman-------------
+#ftp
+#open
+#103.57.221.147
+root
+pass
+-------------------cau hinh zabbix----------
+/etc/httpd/con.d/zabbix.conf
+
+# Zabbix monitoring system php web frontend
+#
+
+#Alias /zabbix /usr/share/zabbix
+
+<VirtualHost *:80>
+   DocumentRoot /usr/share/zabbix
+   ServerName zabbix.ncs.int
+</VirtualHost>
+
+<Directory "/usr/share/zabbix">
+    Options FollowSymLinks
+    AllowOverride None
+    Require all granted
+
+    <IfModule dir_module>
+        DirectoryIndex index.php
+    </IfModule>
+
+    <FilesMatch \.(php|phar)$>
+        SetHandler "proxy:unix:/var/opt/rh/rh-php72/run/php-fpm/zabbix.sock|fcgi://localhost"
+    </FilesMatch>
+</Directory>
+
+<Directory "/usr/share/zabbix/conf">
+    Require all denied
+</Directory>
+
+
+
+di chuyen server zabbix
+https://sbcode.net/zabbix/zabbix-server-copy/
+add host vao agent 
+server=127.0.0.1,ip zabbix-server
+sudo -H -u zabbix 'tail -f /var/log/cmdlog.log'
+chỉnh ngày giờ cho centos fix lỗi không đồng bộ thông báo hoặc add items mà ko hiện thông tin
+# yum install ntp
+# ntpdate vn.pool.ntp.org
+
