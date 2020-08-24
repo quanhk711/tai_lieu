@@ -1,0 +1,222 @@
+-------------------------------compiel httpd----------------------------------
+Cài đặt các gói phần mềm tiên quyết
+# yum install epel-release -y
+# yum groupinstall "Developer Tools" -y
+# yum install gcc-c++ autoconf gcc* wget lynx libtool apr-devel apr-util-devel apr apr-util pcre pcre-devel openssl openssl-devel zlib zlib-devel –y
+lỗi ko tìm thấy gói lynx
+cài riêng gói lynx
+kích hoạt lại repo power tool;  dnf config-manager --set-enabled PowerTools
+yum install lynx
+cài thư viện 
+apr   https://downloads.apache.org/apr/apr-1.7.0.tar.gz
+apr util https://downloads.apache.org/apr/apr-util-1.6.1.tar.gz
+pcre ưget -O pcre-8.44.tar.gz https://sourceforge.net/projects/pcre/files/pcre/8.44/pcre-8.44.tar.gz/download
+openSSL 3.0 https://www.openssl.org/source/openssl-3.0.0-alpha1.tar.gz
+httpd https://downloads.apache.org/httpd/httpd-2.4.43.tar.gz
+giải nén
+Cài đặt thư viện ‘pcre‘ ở thư mục /usr/lib
+# cd pcre-8.21
+# ./configure --prefix=/usr/lib/
+# make && make install
+Di chuyển 2 thư mục source ‘apr-x‘ và ‘apr-util-x‘ vào trong thư mục con ‘./srclib’ của source Apache. Sau đó đổi tên thành ‘apr’ và ‘apr-util‘.
+# cd /usr/local/src/
+# cp -rp apr-1.7.0 httpd-2.4.43/srclib/apr
+# cp -rp apr-util-1.6.1 httpd-2.4.43/srclib/apr-util
+
+Việc di chuyển thành 2 thư mục trên sẽ hỗ trợ cho việc biên dịch Apache với các option ‘–with-included-apr‘, nhằm giúp quá trình biên dịch nhận diện sử dụng 2 source thư viện ‘apr’ và ‘apr-util’ cho hoạt động cài đặt.
+
+cd /usr/local/src/httpd-2.4.43/
+
+./configure \
+ "--with-mpm=prefork" \
+ "--prefix=/usr/local/apache/" \
+ "--exec-prefix=/usr/local/apache/" \
+ "--sysconfdir=/usr/local/apache/conf" \
+ "--sbindir=/usr/local/apache/bin" \
+ "--bindir=/usr/local/apache/bin" \
+ "--datadir=/var/www" \
+ "--mandir=/usr/local/apache/man" \
+ "--libdir=/usr/local/apache/lib" \
+ "--libexecdir=/usr/local/apache/modules" \
+ "--includedir=/usr/local/apache/include" \
+ "--enable-auth" \
+ "--enable-cgid" \
+ "--enable-cgi" \
+ "--enable-dav" \
+ "--enable-dav-fs" \
+ "--enable-dav-lock" \
+ "--enable-deflate" \
+ "--enable-dir" \
+ "--enable-expires" \
+ "--enable-headers" \
+ "--enable-log-config" \
+ "--enable-mime" \
+ "--enable-mime-magic" \
+ "--enable-mods-shared=most" \
+ "--enable-reqtimeout" \
+ "--enable-rewrite" \
+ "--enable-so" \
+ "--enable-ssl" \
+ "--enable-suexec" \
+ "--enable-status" \
+ "--enable-static-support" \
+ "--enable-unique-id" \
+ "--enable-static-htpasswd" \
+ "--enable-static-rotatelogs" \
+ "--disable-asis" \
+ "--disable-auth-anon" \
+ "--disable-auth-dbm" \
+ "--disable-auth-digest" \
+ "--disable-autoindex" \
+ "--disable-cache" \
+ "--disable-case-filter" \
+ "--disable-case-filter-in" \
+ "--disable-cern-meta" \
+ "--disable-disk-cache" \
+ "--disable-ext-filter" \
+ "--disable-file-cache" \
+ "--disable-filter" \
+ "--disable-imap" \
+ "--disable-info" \
+ "--disable-mem-cache" \
+ "--disable-proxy" \
+ "--disable-proxy-connect" \
+ "--disable-proxy-ftp" \
+ "--disable-proxy-http" \
+ "--disable-speling" \
+ "--disable-usertrack" \
+ "--disable-version" \
+ "--with-included-apr" \
+ "--with-pcre=/usr/lib/bin/pcre-config" \
+ "--with-ssl=/usr/local/src/openssl-1.0.2j" \
+ "--enable-ssl-staticlib-deps" \
+ "--enable-mods-static=ssl"
+ 
+ Tiêu chuẩn đường dẫn : /usr/local/apache
+ make && make install
+ 
+ 
+ vi /usr/lib/systemd/system/httpd.service
+ 
+ [Unit]
+Description=The Apache HTTP Server
+ 
+[Service]
+Type=forking
+EnvironmentFile=/usr/local/apache/bin/envvars
+PIDFile=/usr/local/apache/logs/httpd.pid
+ExecStart=/usr/local/apache/bin/apachectl start
+ExecReload=/usr/local/apache/bin/apachectl graceful
+ExecStop=/usr/local/apache/bin/apachectl stop
+KillSignal=SIGCONT
+PrivateTmp=true
+ 
+[Install]
+WantedBy=multi-user.target
+
+# systemctl daemon-reload
+# systemctl enable httpd.service
+ 
+ tạo user apache 
+ groupadd -r apache
+ useradd -r -s /sbin/nologin -d /var/www/ --no-create-home -g apache apache
+ 
+ Cấu hình Apache chạy user ‘apache’. Tìm nội dung dòng tương ứng và cấu hình tên ‘apache’.
+ vi /usr/local/apache/conf/httpd.conf
+ User apache
+Group apache
+
+/etc/init.d/httpd start
+netstat -atnp | grep ":80"
+
+
+
+------------------------------cài php 5xx--------------------------
+#https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/e/epel-release-8-8.el8.noarch.rpm
+#http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+
+https://blog.remirepo.net/post/2019/09/24/CentOS-8-repository
+
+vi /etc/yum.repos.d/remi.repo
+enabled=1
+php=-*
+php-fpm
+-----------------------------------cai php 7.x------------------------
+
+wget http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+rpm -Uvh remi-release-7*.rpm
+vi /etc/yum.repos.d/remi-php70.repo
+yum groupinstall "Development Tools" -y
+ yum install -y libedit-devel libmcrypt-devel enchant-devel
+yum install --disablerepo=* --enablerepo=remi-php70 php php-mysql php-bcmath php-cli php-common php-devel php-embedded php-enchant php-mbstring php-mcrypt php-pdo php-xml -y
+-------------------------------------cài wordpres------------------------
+mysql -u root -p
+tạo database mới
+create database wordpress;
+tạo usẻ mới và mk là 123
+create user wpuser@localhost identified by '123';
+cấp quyền cho user sử dụng database
+grant all privileges on wordpress.* to wpuser@localhost;
+flush privileges;
+use mysql;
+show tables;
+select user from user;
+cấp quyền cho user apache sử dụng thư mục chưa wp
+chown -R apache:apache /var/www/html/*
+thêm vào file cấu hình để fix lỗi 
+vi /var/www/html/WP/wp-config.php
+ define( 'FS_METHOD', 'direct' );
+
+Set 775 cho thư mục wp chứ web site
+
+
+
+https://hocmangmaytinh.com/cai-dat-va-cau-hinh-wordpress-tren-centos-7-bang-lamp.html
+
+
+
+
+
+
+filter filebeat
+
+
+filter {
+  if [fileset][module] == "system" {
+    if [fileset][name] == "auth" {
+      grok {
+        match => { "message" => ["%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} sshd(?:\[%{POSINT:[system][auth][pid]}\])?: %{DATA:[system][auth][ssh][event]} %{DATA:[system][auth][ssh][method]} for (invalid user )?%{DATA:[system][auth][user]} from %{IPORHOST:[system][auth][ssh][ip]} port %{NUMBER:[system][auth][ssh][port]} ssh2(: %{GREEDYDATA:[system][auth][ssh][signature]})?",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} sshd(?:\[%{POSINT:[system][auth][pid]}\])?: %{DATA:[system][auth][ssh][event]} user %{DATA:[system][auth][user]} from %{IPORHOST:[system][auth][ssh][ip]}",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} sshd(?:\[%{POSINT:[system][auth][pid]}\])?: Did not receive identification string from %{IPORHOST:[system][auth][ssh][dropped_ip]}",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} sudo(?:\[%{POSINT:[system][auth][pid]}\])?: \s*%{DATA:[system][auth][user]} :( %{DATA:[system][auth][sudo][error]} ;)? TTY=%{DATA:[system][auth][sudo][tty]} ; PWD=%{DATA:[system][auth][sudo][pwd]} ; USER=%{DATA:[system][auth][sudo][user]} ; COMMAND=%{GREEDYDATA:[system][auth][sudo][command]}",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} groupadd(?:\[%{POSINT:[system][auth][pid]}\])?: new group: name=%{DATA:system.auth.groupadd.name}, GID=%{NUMBER:system.auth.groupadd.gid}",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} useradd(?:\[%{POSINT:[system][auth][pid]}\])?: new user: name=%{DATA:[system][auth][user][add][name]}, UID=%{NUMBER:[system][auth][user][add][uid]}, GID=%{NUMBER:[system][auth][user][add][gid]}, home=%{DATA:[system][auth][user][add][home]}, shell=%{DATA:[system][auth][user][add][shell]}$",
+                  "%{SYSLOGTIMESTAMP:[system][auth][timestamp]} %{SYSLOGHOST:[system][auth][hostname]} %{DATA:[system][auth][program]}(?:\[%{POSINT:[system][auth][pid]}\])?: %{GREEDYMULTILINE:[system][auth][message]}"] }
+        pattern_definitions => {
+          "GREEDYMULTILINE"=> "(.|\n)*"
+        }
+        remove_field => "message"
+      }
+      date {
+        match => [ "[system][auth][timestamp]", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+      geoip {
+        source => "[system][auth][ssh][ip]"
+        target => "[system][auth][ssh][geoip]"
+      }
+    }
+    else if [fileset][name] == "syslog" {
+      grok {
+        match => { "message" => ["%{SYSLOGTIMESTAMP:[system][syslog][timestamp]} %{SYSLOGHOST:[system][syslog][hostname]} %{DATA:[system][syslog][program]}(?:\[%{POSINT:[system][syslog][pid]}\])?: %{GREEDYMULTILINE:[system][syslog][message]}"] }
+        pattern_definitions => { "GREEDYMULTILINE" => "(.|\n)*" }
+        remove_field => "message"
+      }
+      date {
+        match => [ "[system][syslog][timestamp]", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+    }
+  }
+}
+
+
+
