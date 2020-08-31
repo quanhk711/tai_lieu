@@ -1,0 +1,84 @@
+---------------------alias ssh-----------------
+alias sshA='ssh root@103.57.221.147 -p24700'
+echo "sshA='ssh root@103.57.221.147 -p24700'" >> ./.bashrc
+--------------------Cấu hình hiển thị số dòng trong vi------------
+:set nu
+-------------------------Xuất output terminal theo dạng cột----------
+head -n 10 /etc/passwd | column -t -s":"
+---------------------Danh sách các phím tắt ----------------------
+Ctrl + A	đưa con trỏ về đầu dòng mà bạn đang đánh text.
+Ctrl + E	đưa con trỏ về cuối dòng mà bạn đang đánh text.
+Ctrl + U	xoá tất cả kí tự và từ đứng phía trước con trỏ. Nếu bạn đứng cuối hàng text, thì đồng nghĩa bạn xoá cả hàng text đang đánh.
+Ctrl + H	tương ứng nút 'backspace', xoá ngược về trước từng kí tự.
+----------------------------------------cach dùng sed--------------------------
+sed tượng trưng cho stream editor.
+
+thay thế chuổi xuất hiện đầu tiên của mẫu (pattern) trong mỗi dòng
+sed 's/pattern/replace_string/' file hoặc cat file | sed 's/pattern/replace_string/'
+chổ replace có thể là khoảng trống nếu muốn xóa chuổi ra khỏi dòng
+
+lưu sang file khác 
+sed 's/text/replace/' file > newfile
+
+thay thế tất cả 
+sed 's/pattern/replace_string/g' file
+
+xóa khoảng trống
+sed '/^$/d' file ; Với các dòng trống, ký hiệu kết thúc dòng xuất hiện kế bên ký hiệu bắt đầu dòng.
+
+
+-----------------------------biểu thức chín quy-------------------------------
+https://www.justpassion.net/tech/programming/bash-shell/bieu-thuc-chinh-quy.html
+
+-----------------------------------Delay trong Bash shell----------------------------
+#!/bin/bash
+command_1
+sleep interval
+
+command_2
+Trong đó interval là số nguyên dương và được tính bằng giây.
+
+
+---------------cấu hình mạng ----------------------------
+đổi tên hostname
+
+hostname abcxyz
+vi /etc/sysconfig/network 
+NETWORKING=yes
+HOSTNAME=CENTOS7
+
+kiểm tra xem đã gắn dây mạng vô chưa
+ethtool tên card mạng
+Restart card mạng bằng lệnh : service network restart
+
+-------------------------------samba---------------------------------
+cd /etc/samba
+
+
+sed -e '/^#/d;/^$/d' smb.conf.example > smb.conf
+
+chia sẻ thư mục ở phần [ public]
+add user vào samba 
+smbpasswd -a u1
+
+------------------mariadb-----------------
+mysql -u root -e 'SHOW DATABASES'
+mysql --skip-column-names -E -u root -e 'SHOW DATABASES'
+mysql --skip-column-names -E -u root -e 'SHOW DATABASES' |grep -v "*"
+
+
+--------------------------cách đổi dns trên ubuntu 20.04-----XXXXXXXXXXXXXXXXXX
+sudo vi /etc/resolv.conf 
+mỗi lần edit muốn dùng phím lên xuông phải nhấn esc
+
+systemd-resolve --set-dns=192.168.0.100 --interface enp4s0f1
+  systemd-resolve --status
+    cat /etc/resolv.conf 
+
+---------------cách truy cập vào file sv trên ubuntu---------xxxxxxxxxxxxxxxxxx
+sudo apt -y install smbclient cifs-utils
+smbclient -m smb2'\\fileserver.ncs.int\INFRA' -U quannhm
+
+--------------------- cách kiểm tra dịch vụ đang chạy trên ipv6 hay ipv4 ---------------
+
+

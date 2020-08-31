@@ -1,0 +1,148 @@
+
+-------------------------------------------------------------------------------------------------------
+Firewalld : Basic Operation
+
+This is the Basic Operation of Firewalld.
+The definition of services is set to zones on Firewalld.
+To enable Firewall, assosiate a zone to a NIC with related commands.
+[1]	To use Firewalld, start the Service.
+[root@dlp ~]# systemctl enable --now firewalld
+[2]	By default, [public] zone is applied with a NIC and cockpit, dhcpv6-client, ssh are allowed. When operating with [firewall-cmd] command, if you input the command without [--zone=***] specification, then, configuration is set to the default zone.
+# display the default zone
+[root@dlp ~]# firewall-cmd --get-default-zone
+public
+# display current settings
+[root@dlp ~]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens2
+  sources:
+  services: cockpit dhcpv6-client ssh
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+# display all zones defined by default
+[root@dlp ~]# firewall-cmd --list-all-zones
+block
+  target: %%REJECT%%
+  icmp-block-inversion: no
+  interfaces:
+  sources:
+  services:
+  ports:
+  protocols:
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+  .....
+  .....
+
+# display allowed services on a specific zone
+[root@dlp ~]# firewall-cmd --list-service --zone=external
+ssh
+# change default zone
+[root@dlp ~]# firewall-cmd --set-default-zone=external
+success
+# change zone for an interface (*note)
+[root@dlp ~]# firewall-cmd --change-interface=ens8 --zone=external
+success
+[root@dlp ~]# firewall-cmd --list-all --zone=external
+external (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens8
+  sources:
+  services: ssh
+  ports:
+  protocols:
+  masquerade: yes
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+# *note : it's not changed permanently with [change-interface] even if added [--permanent] option
+# if change permanently, use [nmcli] command like follows
+[root@dlp ~]# nmcli connection modify ens8 connection.zone external
+[root@dlp ~]# firewall-cmd --get-active-zone
+external
+  interfaces: ens8
+public
+  interfaces: ens2
+[3]	Display services defined by default.
+[root@dlp ~]# firewall-cmd --get-services
+RH-Satellite-6 amanda-client amanda-k5-client amqp amqps apcupsd audit bacula bacula-client bgp bitcoin bitcoin-rpc bitcoin-testnet bitcoin-testnet-rpc ceph ceph-mon cfengine cockpit condor-collector ctdb dhcp dhcpv6 dhcpv6-client distcc dns docker-registry docker-swarm dropbox-lansync elasticsearch etcd-client etcd-server finger freeipa-ldap freeipa-ldaps freeipa-replication freeipa-trust ftp ganglia-client ganglia-master git gre high-availability http https imap imaps ipp ipp-client ipsec irc ircs iscsi-target isns jenkins kadmin kerberos kibana klogin kpasswd kprop kshell ldap ldaps libvirt libvirt-tls lightning-network llmnr managesieve matrix mdns minidlna mongodb mosh mountd mqtt mqtt-tls ms-wbt mssql murmur mysql nfs nfs3 nmea-0183 nrpe ntp nut openvpn ovirt-imageio ovirt-storageconsole ovirt-vmconsole plex pmcd pmproxy pmwebapi pmwebapis pop3 pop3s postgresql privoxy proxy-dhcp ptp pulseaudio puppetmaster quassel radius redis rpc-bind rsh rsyncd rtsp salt-master samba samba-client samba-dc sane sip sips slp smtp smtp-submission smtps snmp snmptrap spideroak-lansync squid ssh steam-streaming svdrp svn syncthing syncthing-gui synergy syslog syslog-tls telnet tftp tftp-client tinc tor-socks transmission-client upnp-client vdsm vnc-server wbem-http wbem-https wsman wsmans xdmcp xmpp-bosh xmpp-client xmpp-local xmpp-server zabbix-agent zabbix-server
+
+# definition files are placed like follows
+# if you'd like to add your original definition, add XML file on there
+[root@dlp ~]# ls /usr/lib/firewalld/services
+amanda-client.xml        jenkins.xml               redis.xml
+amanda-k5-client.xml     kadmin.xml                RH-Satellite-6.xml
+amqps.xml                kerberos.xml              rpc-bind.xml
+amqp.xml                 kibana.xml                rsh.xml
+apcupsd.xml              klogin.xml                rsyncd.xml
+.....
+.....
+ipsec.xml                ptp.xml                   xmpp-server.xml
+ircs.xml                 pulseaudio.xml            zabbix-agent.xml
+irc.xml                  puppetmaster.xml          zabbix-server.xml
+iscsi-target.xml         quassel.xml
+isns.xml                 radius.xml
+[4]	Add or Remove allowed services.
+The change will be back after rebooting the system. If you change settings permanently, add the [--permanent] option.
+# for example, add [http] (the change will be valid at once)
+[root@dlp ~]# firewall-cmd --add-service=http
+success
+[root@dlp ~]# firewall-cmd --list-service
+cockpit dhcpv6-client http ssh
+# for example, remove [http]
+[root@dlp ~]# firewall-cmd --remove-service=http
+success
+[root@dlp ~]# firewall-cmd --list-service
+cockpit dhcpv6-client ssh
+# for example, add [http] permanently. (this permanent case, it's necessary to reload the Firewalld to apply change)
+[root@dlp ~]# firewall-cmd --add-service=http --permanent
+success
+[root@dlp ~]# firewall-cmd --reload
+success
+[root@dlp ~]# firewall-cmd --list-service
+cockpit dhcpv6-client http ssh
+[5]	Add or remove allowed ports.
+# for example, add [TCP 465]
+[root@dlp ~]# firewall-cmd --add-port=465/tcp
+success
+[root@dlp ~]# firewall-cmd --list-port
+465/tcp
+# for example, remove [TCP 465]
+[root@dlp ~]# firewall-cmd --remove-port=465/tcp
+success
+[root@dlp ~]# firewall-cmd --list-port
+ 
+# for example, add [TCP 465] permanently
+[root@dlp ~]# firewall-cmd --add-port=465/tcp --permanent
+success
+[root@dlp ~]# firewall-cmd --reload
+success
+[root@dlp ~]# firewall-cmd --list-port
+465/tcp
+[6]	Add or remove prohibited ICMP types.
+# for example, add [echo-request] to prohibit it
+[root@dlp ~]# firewall-cmd --add-icmp-block=echo-request
+success
+[root@dlp ~]# firewall-cmd --list-icmp-blocks
+echo-request
+# for example, remove [echo-request]
+[root@dlp ~]# firewall-cmd --remove-icmp-block=echo-request
+success
+[root@dlp ~]# firewall-cmd --list-icmp-blocks
+# display available ICMP types
+[root@dlp ~]# firewall-cmd --get-icmptypes
+address-unreachable bad-header beyond-scope communication-prohibited destination-unreachable echo-reply echo-request failed-policy fragmentation-needed host-precedence-violation host-prohibited host-redirect host-unknown host-unreachable ip-header-bad neighbour-advertisement neighbour-solicitation network-prohibited network-redirect network-unknown network-unreachable no-route packet-too-big parameter-problem port-unreachable precedence-cutoff protocol-unreachable redirect reject-route required-option-missing router-advertisement router-solicitation source-quench source-route-failed time-exceeded timestamp-reply timestamp-request tos-host-redirect tos-host-unreachable tos-network-redirect tos-network-unreachable ttl-zero-during-reassembly ttl-zero-during-transit unknown-header-type unknown-option

@@ -1,0 +1,56 @@
+-------------------------------------------------------------------------------------------------------
+Initial Settings : Add Common Users
+-------------------------------------------------------------------------------------------------------
+
+[1]	To add a common user account on CentOS Server, Set like follows.
+
+-------------------------------------------------------------------------------------------------------
+
+[root@localhost ~]# useradd centos
+[root@localhost ~]# passwd centos
+Changing password for user centos.
+New UNIX password:              # input any password you'd like to set
+Retype new UNIX password:       # confirm
+passwd: all authentication tokens updated successfully.
+-------------------------------------------------------------------------------------------------------
+[2]	If you'd like to switch to root user account from a common user, use [su] command to do so.
+-------------------------------------------------------------------------------------------------------
+
+localhost login: centos         # login username
+password:                       # input user password
+[centos@localhost ~]$ su -      # swicth to root
+Password:                       # input root password
+[root@localhost ~]#             # just switched to root
+-------------------------------------------------------------------------------------------------------
+[3]	If you'd like to limit users to run [su] command, set like follows.
+On the example below, only users in [wheel] group can run [su] command.
+[root@localhost ~]# usermod -G wheel centos
+[root@localhost ~]# vi /etc/pam.d/su
+#%PAM-1.0
+auth            sufficient      pam_rootok.so
+# Uncomment the following line to implicitly trust users in the "wheel" group.
+#auth           sufficient      pam_wheel.so trust use_uid
+# Uncomment the following line to require a user to be in the "wheel" group.
+# uncomment the following line
+auth            required        pam_wheel.so use_uid
+auth            substack        system-auth
+auth            include         postlogin
+account         sufficient      pam_succeed_if.so uid = 0 use_uid quiet
+account         include         system-auth
+password        include         system-auth
+session         include         system-auth
+session         include         postlogin
+session         optional        pam_xauth.so
+
+# verify settings with a user that is not in allowed group
+[redhat@localhost ~]$ su -
+Password:
+su: Permission denied     # denied normally
+-------------------------------------------------------------------------------------------------------
+[4]	If you'd like to remove a user accounts, Set like follows.
+-------------------------------------------------------------------------------------------------------
+
+# remove a user [centos] (only removed user account)
+[root@localhost ~]# userdel centos
+# remove a user [centos] (removed user account and his home directory both)
+[root@localhost ~]# userdel -r centos
