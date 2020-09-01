@@ -341,7 +341,12 @@ yum install net-tool
 yum install MariaDB-server MariaDB-client MariaDB-devel -y
 systemctl start mariadb.service
 systemctl enable --now mariadb
+
 mysql_secure_installation
+
+mysql> SELECT user FROM mysql.user;
+
+
 rpm -qa | grep mariadb
 mysql -u root -p thoitrang <thoitrangdb    import database
 mysql -u root -p để vào mysql
