@@ -82,3 +82,6 @@ smbclient -m smb2'\\fileserver.ncs.int\INFRA' -U quannhm
 --------------------- cách kiểm tra dịch vụ đang chạy trên ipv6 hay ipv4 ---------------
 
 
+test syn gitlab 
+
+
